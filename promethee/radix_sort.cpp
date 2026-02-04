@@ -89,7 +89,7 @@ namespace radix_sort {
                 count[pass][i] += count[pass][i - 1];
             }
 
-            for (int i = pixels.size() - 1; i >= 0; i--) {
+            for (int i = n - 1; i >= 0; i--) {
                 uint64_t byte_val = doubleToByte(getTargetData((*src)[i], sort_by_first));
                 
                 int byte_idx = (byte_val >> (pass << BITS_PER_BYTE_SHIFT)) & BYTE_MASK;
