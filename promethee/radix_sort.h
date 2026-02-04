@@ -14,7 +14,7 @@ namespace radix_sort {
 
     // Represents a pixel: .first is the intensity value, .second 
     // is the original index or position. 
-    using PixelData = pair<ldouble, ldouble>;
+    using PixelData = std::pair<ldouble, ldouble>;
 
     // This function uses an optimized Radix Sort to sort the image pixels
     // according to their values. If `sort_by_first` is true, then it sorts
