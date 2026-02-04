@@ -39,7 +39,7 @@ namespace radix_sort {
     }
 
     void radixSort(vector<PixelData> &pixels, bool sort_by_first) {
-        size_t n = pixels.size();
+        size_t n = (int) pixels.size();
         if (n < 2) {
             return;
         }

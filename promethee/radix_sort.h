@@ -3,16 +3,16 @@
 #ifndef RADIX_SORT_H
 #define RADIX_SORT_H
 
+#include "types.h"
+
 #include <utility>
 #include <vector>
-
-#include "types.h"
 
 namespace radix_sort {
 
     using types::ldouble;
 
-    // Represents a pixel: .first is the intensity value, .second 
+    // Represents a pixel: .first is the intensity value, .second
     // is the original index or position. 
     using PixelData = std::pair<ldouble, ldouble>;
 
