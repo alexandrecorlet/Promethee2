@@ -51,7 +51,7 @@ void radix_sort::radixSort(vector<PixelData> &pixels, bool sort_by_first) {
     for (int pass = 0; pass < NUM_PASSES; pass++) {
         // Compute frequency of each element
         size_t count[RADIX];
-        memset(count, 0, sizeof(count)) 
+        memset(count, 0, sizeof(count));
         for (int i = 0; i < n; i++) {
             uint64_t byte_val = doubleToByte(getTargetData((*src)[i], sort_by_first));
             int byte_idx = (byte_val >> (pass << BITS_PER_BYTE_SHIFT)) & BYTE_MASK;
