@@ -24,85 +24,57 @@ const uint64_t MSB_MASK = 1ULL << 63;
 // Number of bits we need to shift to go to the next byte (1 << BITS_PER_BYTE_SHIFT = 8)
 const int BITS_PER_BYTE_SHIFT = 3;
 
-namespace radix_sort {
+// Converts a double (ldouble) to a byte
+inline uint64_t doubleToByte(ldouble num) {
+    uint64_t byt;
+    memcpy(&byt, &num, sizeof(ldouble));
 
-    // Converts a double (ldouble) to a byte
-    inline uint64_t doubleToByte(ldouble num) {
-        uint64_t byt;
-        memcpy(&byt, &num, sizeof(ldouble));
+    return (byt & MSB_MASK) ? ~byt : byt ^ MSB_MASK;
+}
 
-        return (byt & MSB_MASK) ? ~byt : byt ^ MSB_MASK;
+inline ldouble getTargetData(PixelData &data, bool sort_by_first) {
+    return sort_by_first ? data.first : data.second;
+}
+
+void radix_sort::radixSort(vector<PixelData> &pixels, bool sort_by_first) {
+    int n = (int) pixels.size();
+    if (n < 2) {
+        return;
     }
 
-    inline ldouble getTargetData(PixelData &data, bool sort_by_first) {
-        return sort_by_first ? data.first : data.second;
-    }
-
-    void radixSort(vector<PixelData> &pixels, bool sort_by_first) {
-        size_t n = (int) pixels.size();
-        if (n < 2) {
-            return;
-        }
-
-        size_t count[NUM_PASSES][RADIX];
-        for (int i = 0; i < NUM_PASSES; i++) {
-            fill(count[i], count[i] + RADIX, 0);
-        }
-
-        // Compute the frequency of each element. This
-        // is used to compute the offset later
-        for (int i = 0; i < n; i++) {
-            uint64_t byte_val = doubleToByte(getTargetData(pixels[i], sort_by_first));
-            
-            for (int pass = 0; pass < NUM_PASSES; pass++) {
-                int byte_idx = (byte_val >> (pass << BITS_PER_BYTE_SHIFT)) & BYTE_MASK;
-                count[pass][byte_idx]++;
-            }
-        }
-
-        // Temporary buffer to store sorted bytes
-        vector<PixelData> temp_buffer(pixels.size());
+    // Temporary buffer to store sorted bytes
+    vector<PixelData> temp_buffer(pixels.size());
         
-        vector<PixelData> *src = &pixels;
-        vector<PixelData> *dest = &temp_buffer;
+    vector<PixelData> *src = &pixels;
+    vector<PixelData> *dest = &temp_buffer;
 
-        for (int pass = 0; pass < NUM_PASSES; pass++) {
-            // Check if this pass is skipable. A pass is skipable if all
-            // elements in the bucket are the same.
-            bool can_skip = false;
-            for (int i = 0; i < RADIX; i++) {
-                if (count[pass][i] == n) {
-                    can_skip = true;
-                }
+    for (int pass = 0; pass < NUM_PASSES; pass++) {
+        // Compute frequency of each element
+        size_t count[RADIX];
+        memcpy(&count, count + RADIX, 0);
+        for (int i = 0; i < n; i++) {
+            uint64_t byte_val = doubleToByte((*(src)[i], sort_by_first));
+            int byte_idx = (byte_val >> (pass << BITS_PER_BYTE_SHIFT)) & BYTE_MASK;
+            count[byte_idx]++;
+        }
 
-                if (count[pass][i] > 0) {
-                    break;
-                }
-            }
+        // Compute offset
+        for (int i = 1; i < RADIX; i++) {
+            count[i] += count[i - 1];
+        }
 
-            if (can_skip) {
-                continue;
-            }
-
-            // Compute offset
-            for (int i = 1; i < RADIX; i++) {
-                count[pass][i] += count[pass][i - 1];
-            }
-
-            for (int i = n - 1; i >= 0; i--) {
-                uint64_t byte_val = doubleToByte(getTargetData((*src)[i], sort_by_first));
+        for (int i = n - 1; i >= 0; i--) {
+            uint64_t byte_val = doubleToByte(getTargetData((*src)[i], sort_by_first));
                 
-                int byte_idx = (byte_val >> (pass << BITS_PER_BYTE_SHIFT)) & BYTE_MASK;
-                int pos = --count[pass][byte_idx];
-                (*dest)[pos] = (*src)[i];
-            }
-
-            swap(src, dest);
+            int byte_idx = (byte_val >> (pass << BITS_PER_BYTE_SHIFT)) & BYTE_MASK;
+            int pos = --count[byte_idx];
+            (*dest)[pos] = (*src)[i];
         }
 
-        if (src != &pixels) {
-            pixels = temp_buffer;
-        }
+        swap(src, dest);
     }
 
-} // namespace radix_sort
+    if (src != &pixels) {
+        pixels = temp_buffer;
+    }
+}
